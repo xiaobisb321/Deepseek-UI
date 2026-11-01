@@ -1,0 +1,221 @@
+local Players = game:GetService("Players")
+local UIS = game:GetService("UserInputService")
+
+local lp = Players.LocalPlayer
+local pg = lp:WaitForChild("PlayerGui")
+
+for _, v in ipairs(pg:GetChildren()) do
+    if v.Name == "DeepSeekUI" then v:Destroy() end
+end
+
+-- 纯净单色图标库 (Roblox 内置素材，无需自行上传)
+local ICON_WHALE = "rbxassetid://7734030540"
+local ICON_SEARCH = "rbxassetid://8641695373"
+local ICON_HOME = "rbxassetid://10709785874"
+local ICON_CONTROL = "rbxassetid://10709785307"
+local ICON_SCRIPT = "rbxassetid://10709785007"
+local ICON_APPEARANCE = "rbxassetid://10709786322"
+local ICON_ABOUT = "rbxassetid://10709784807"
+local ICON_STAR = "rbxassetid://10709786576"
+
+local C_WHITE = Color3.fromRGB(255, 255, 255)
+local C_TEXT = Color3.fromRGB(30, 30, 35)
+local C_SUB = Color3.fromRGB(120, 120, 130)
+local C_BLUE = Color3.fromRGB(58, 115, 253)
+local C_BG = Color3.fromRGB(245, 246, 250)
+local FONT = Enum.Font.Gotham
+local FONT_BOLD = Enum.Font.GothamBold
+
+local function create(cls, props, parent)
+    local i = Instance.new(cls)
+    for k, v in pairs(props) do i[k] = v end
+    if parent then i.Parent = parent end
+    return i
+end
+
+local function corner(p, r)
+    create("UICorner", { CornerRadius = UDim.new(0, r or 8) }, p)
+end
+
+local gui = create("ScreenGui", {
+    Name = "DeepSeekUI", ResetOnSpawn = false,
+    IgnoreGuiInset = true, DisplayOrder = 999, Parent = pg
+})
+
+-- ==========================================
+-- 1. 顶部状态与数据
+-- ==========================================
+local topBar = create("Frame", { Size = UDim2.new(1, 0, 0, 45), BackgroundColor3 = Color3.fromRGB(30, 30, 35), BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = gui })
+create("Frame", { Size = UDim2.new(1, 0, 0, 1), Position = UDim2.new(0, 0, 1, 0), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.8, BorderSizePixel = 0, Parent = topBar })
+
+local function addData(x, title, value, isGrad, barColor)
+    local f = create("Frame", { Size = UDim2.new(0, 120, 1, 0), Position = UDim2.new(0, x, 0, 0), BackgroundTransparency = 1, Parent = topBar })
+    create("TextLabel", { Size = UDim2.new(0, 35, 0, 15), Position = UDim2.new(0, 10, 0, 6), BackgroundTransparency = 1, Text = title, TextColor3 = C_WHITE, TextSize = 12, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = f })
+    create("TextLabel", { Size = UDim2.new(0, 75, 0, 15), Position = UDim2.new(0, 45, 0, 6), BackgroundTransparency = 1, Text = value, TextColor3 = C_WHITE, TextSize = 12, Font = FONT, TextXAlignment = Enum.TextXAlignment.Left, Parent = f })
+    local barBg = create("Frame", { Size = UDim2.new(1, -20, 0, 3), Position = UDim2.new(0, 10, 0, 26), BackgroundColor3 = Color3.fromRGB(50, 50, 50), BorderSizePixel = 0, Parent = f })
+    local fill = create("Frame", { Size = UDim2.new(0.6, 0, 1, 0), BackgroundColor3 = barColor, BorderSizePixel = 0, Parent = barBg })
+    if isGrad then create("UIGradient", { Color = ColorSequence.new(Color3.fromRGB(220, 255, 0), Color3.fromRGB(0, 255, 100)), Parent = fill }) end
+end
+
+addData(20, "内存", "981.77 MB", true, C_WHITE)
+addData(140, "CPU", "16.72 ms", false, Color3.fromRGB(0, 255, 100))
+addData(260, "GPU", "3.18 ms", false, Color3.fromRGB(0, 255, 100))
+addData(380, "已发送", "0.83 KB/s", false, Color3.fromRGB(0, 255, 100))
+addData(500, "收到", "7.62 KB/s", false, Color3.fromRGB(0, 255, 100))
+addData(620, "NetworkPing", "244 ms", false, Color3.fromRGB(255, 150, 0))
+
+local rightTexts = create("Frame", { Size = UDim2.new(0, 150, 0, 80), Position = UDim2.new(1, -170, 0, 10), BackgroundTransparency = 1, Parent = gui })
+for i, txt in ipairs({"Auto Run", "Team Check", "ESP Boxes", "NetworkPing", "Marquee"}) do
+    create("TextLabel", { Size = UDim2.new(1, 0, 0, 16), Position = UDim2.new(0, 0, 0, (i-1)*15), BackgroundTransparency = 1, Text = txt, TextColor3 = C_BLUE, TextSize = 14, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Right, Parent = rightTexts })
+end
+
+-- ==========================================
+-- 2. 左上角标识
+-- ==========================================
+local topLeftLogo = create("Frame", { Size = UDim2.new(0, 200, 0, 30), Position = UDim2.new(0, 25, 0, 55), BackgroundTransparency = 1, Parent = gui })
+create("ImageLabel", { Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(0, 0, 0.5, -9), BackgroundTransparency = 1, Image = ICON_WHALE, ImageColor3 = C_BLUE, Parent = topLeftLogo })
+create("TextLabel", { Size = UDim2.new(0, 120, 1, 0), Position = UDim2.new(0, 25, 0, 0), BackgroundTransparency = 1, Text = "DeepSeek AI", TextColor3 = C_TEXT, TextSize = 14, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = topLeftLogo })
+
+-- ==========================================
+-- 3. 左下角 deepseek 水印
+-- ==========================================
+local watermark = create("Frame", { Size = UDim2.new(0, 100, 0, 20), Position = UDim2.new(0, 20, 1, -30), BackgroundTransparency = 1, Parent = gui })
+create("ImageLabel", { Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(0, 0, 0.5, -9), BackgroundTransparency = 1, Image = ICON_WHALE, ImageColor3 = C_BLUE, Parent = watermark })
+create("TextLabel", { Size = UDim2.new(0, 80, 1, 0), Position = UDim2.new(0, 22, 0, 0), BackgroundTransparency = 1, Text = "deepseek", TextColor3 = C_BLUE, TextSize = 14, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = watermark })
+
+-- ==========================================
+-- 4. 主面板
+-- ==========================================
+local mainFrame = create("Frame", { Size = UDim2.new(0, 700, 0, 450), Position = UDim2.new(0.5, -350, 0.5, -215), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.1, BorderSizePixel = 0, Parent = gui })
+corner(mainFrame, 12)
+create("UIStroke", { Color = C_WHITE, Transparency = 0.6, Thickness = 1.5, Parent = mainFrame })
+
+local dragBar = create("Frame", { Size = UDim2.new(1, 0, 0, 35), BackgroundTransparency = 1, Parent = mainFrame })
+local btnMin = create("TextButton", { Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -70, 0.5, -15), BackgroundTransparency = 1, Text = "—", TextColor3 = C_SUB, TextSize = 16, Font = FONT_BOLD, Parent = dragBar })
+local btnClose = create("TextButton", { Size = UDim2.new(0, 30, 0, 30), Position = UDim2.new(1, -35, 0.5, -15), BackgroundTransparency = 1, Text = "✕", TextColor3 = C_SUB, TextSize = 15, Font = FONT_BOLD, Parent = dragBar })
+
+local dragging, dragStart, startPos
+dragBar.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = true; dragStart = i.Position; startPos = mainFrame.Position end end)
+UIS.InputChanged:Connect(function(i) if dragging and i.UserInputType == Enum.UserInputType.MouseMovement then local d = i.Position - dragStart; mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end end)
+
+-- ==========================================
+-- 5. 左侧边栏 (取消所有 emoji，换用极简图标)
+-- ==========================================
+local sidebar = create("Frame", { Size = UDim2.new(0, 170, 1, -35), Position = UDim2.new(0, 0, 0, 35), BackgroundColor3 = C_BG, BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = mainFrame })
+corner(sidebar, 12)
+create("Frame", { Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(1, -20, 0, 0), BackgroundColor3 = C_BG, BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = sidebar })
+create("Frame", { Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(0, 0, 1, -20), BackgroundColor3 = C_BG, BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = sidebar })
+create("Frame", { Size = UDim2.new(0, 1, 1, 0), Position = UDim2.new(1, 0, 0, 0), BackgroundColor3 = C_SUB, BackgroundTransparency = 0.8, BorderSizePixel = 0, Parent = sidebar })
+
+local searchBox = create("Frame", { Size = UDim2.new(1, -30, 0, 32), Position = UDim2.new(0, 15, 0, 15), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.2, BorderSizePixel = 0, Parent = sidebar })
+corner(searchBox, 6)
+create("ImageLabel", { Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 10, 0.5, -7), BackgroundTransparency = 1, Image = ICON_SEARCH, ImageColor3 = C_SUB, Parent = searchBox })
+create("TextLabel", { Size = UDim2.new(1, -35, 1, 0), Position = UDim2.new(0, 30, 0, 0), BackgroundTransparency = 1, Text = "Search", TextColor3 = C_SUB, TextSize = 12, Font = FONT, TextXAlignment = Enum.TextXAlignment.Left, Parent = searchBox })
+
+local menu = create("Frame", { Size = UDim2.new(1, -20, 0, 220), Position = UDim2.new(0, 10, 0, 60), BackgroundTransparency = 1, Parent = sidebar })
+create("UIListLayout", { Padding = UDim.new(0, 4), Parent = menu })
+
+local function menuItem(iconId, text, isActive)
+    local btn = create("TextButton", { Size = UDim2.new(1, 0, 0, 36), BackgroundColor3 = isActive and C_WHITE or C_BG, BackgroundTransparency = isActive and 0 or 1, Text = "", AutoButtonColor = false, Parent = menu })
+    corner(btn, 6)
+    if isActive then create("Frame", { Size = UDim2.new(0, 3, 0.6, 0), Position = UDim2.new(0, 0, 0.2, 0), BackgroundColor3 = C_BLUE, BorderSizePixel = 0, Parent = btn }) end
+    
+    create("ImageLabel", { Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(0, 12, 0.5, -7), BackgroundTransparency = 1, Image = iconId, ImageColor3 = isActive and C_BLUE or C_SUB, Parent = btn })
+    create("TextLabel", { Size = UDim2.new(1, -40, 1, 0), Position = UDim2.new(0, 35, 0, 0), BackgroundTransparency = 1, Text = text, TextColor3 = isActive and C_BLUE or C_TEXT, TextSize = 13, Font = isActive and FONT_BOLD or FONT, TextXAlignment = Enum.TextXAlignment.Left, Parent = btn })
+end
+
+menuItem(ICON_HOME, "主页", true)
+menuItem(ICON_CONTROL, "控制", false)
+menuItem(ICON_SCRIPT, "脚本", false)
+menuItem(ICON_APPEARANCE, "外观", false)
+menuItem(ICON_ABOUT, "关于", false)
+
+local userBox = create("Frame", { Size = UDim2.new(1, -20, 0, 50), Position = UDim2.new(0, 10, 1, -60), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.2, BorderSizePixel = 0, Parent = sidebar })
+corner(userBox, 8)
+local avatar = create("ImageLabel", { Size = UDim2.new(0, 36, 0, 36), Position = UDim2.new(0, 7, 0.5, -18), BackgroundColor3 = C_SUB, Parent = userBox })
+corner(avatar, 18)
+create("TextLabel", { Size = UDim2.new(1, -55, 0, 18), Position = UDim2.new(0, 50, 0, 8), BackgroundTransparency = 1, Text = lp.DisplayName, TextColor3 = C_TEXT, TextSize = 13, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = userBox })
+create("TextLabel", { Size = UDim2.new(1, -55, 0, 16), Position = UDim2.new(0, 50, 0, 26), BackgroundTransparency = 1, Text = "@" .. lp.Name, TextColor3 = C_SUB, TextSize = 11, Font = FONT, TextXAlignment = Enum.TextXAlignment.Left, Parent = userBox })
+
+task.spawn(function()
+    local s, img = pcall(function() return Players:GetUserThumbnailAsync(lp.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size100x100) end)
+    if s then avatar.Image = img end
+end)
+
+-- ==========================================
+-- 6. 右侧内容区
+-- ==========================================
+local content = create("Frame", { Size = UDim2.new(1, -170, 1, -35), Position = UDim2.new(0, 170, 0, 35), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = mainFrame })
+corner(content, 12)
+create("Frame", { Size = UDim2.new(0, 30, 0, 20), Position = UDim2.new(0, 0, 1, -20), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.3, BorderSizePixel = 0, Parent = content })
+
+local scroll = create("ScrollingFrame", { Size = UDim2.new(1, -40, 1, -30), Position = UDim2.new(0, 20, 0, 15), BackgroundTransparency = 1, BorderSizePixel = 0, ScrollBarThickness = 4, ScrollBarImageColor3 = C_SUB, CanvasSize = UDim2.new(0, 0, 0, 500), Parent = content })
+create("TextLabel", { Size = UDim2.new(1, 0, 0, 30), BackgroundTransparency = 1, Text = "概览", TextColor3 = C_TEXT, TextSize = 15, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = scroll })
+
+local cardList = create("Frame", { Size = UDim2.new(1, 0, 0, 450), Position = UDim2.new(0, 0, 0, 40), BackgroundTransparency = 1, Parent = scroll })
+create("UIListLayout", { Padding = UDim.new(0, 10), Parent = cardList })
+
+local function createCard(title, desc, type)
+    local card = create("Frame", { Size = UDim2.new(1, -10, 0, 72), BackgroundColor3 = C_BG, BackgroundTransparency = 0.1, BorderSizePixel = 0, Parent = cardList })
+    corner(card, 8)
+    create("TextLabel", { Size = UDim2.new(1, -20, 0, 22), Position = UDim2.new(0, 15, 0, 12), BackgroundTransparency = 1, Text = title, TextColor3 = C_TEXT, TextSize = 14, Font = FONT_BOLD, TextXAlignment = Enum.TextXAlignment.Left, Parent = card })
+    create("TextLabel", { Size = UDim2.new(1, -20, 0, 20), Position = UDim2.new(0, 15, 0, 38), BackgroundTransparency = 1, Text = desc, TextColor3 = C_SUB, TextSize = 12, Font = FONT, TextXAlignment = Enum.TextXAlignment.Left, TextWrapped = true, Parent = card })
+
+    if type == "toggle" then
+        local tBg = create("Frame", { Size = UDim2.new(0, 34, 0, 18), Position = UDim2.new(1, -45, 0.5, -9), BackgroundColor3 = C_BLUE, BorderSizePixel = 0, Parent = card })
+        corner(tBg, 9)
+        local dot = create("Frame", { Size = UDim2.new(0, 14, 0, 14), Position = UDim2.new(1, -16, 0.5, -7), BackgroundColor3 = C_WHITE, BorderSizePixel = 0, Parent = tBg })
+        corner(dot, 7)
+    elseif type == "slider" then
+        create("TextLabel", { Size = UDim2.new(0, 20, 0, 20), Position = UDim2.new(1, -75, 0.5, -10), BackgroundTransparency = 1, Text = "32", TextColor3 = C_SUB, TextSize = 13, Font = FONT, Parent = card })
+        local sTrack = create("Frame", { Size = UDim2.new(0, 18, 0, 18), Position = UDim2.new(1, -45, 0.5, -9), BackgroundColor3 = C_WHITE, BorderSizePixel = 0, Parent = card })
+        corner(sTrack, 3)
+    elseif type == "icon" then
+        create("ImageLabel", { Size = UDim2.new(0, 16, 0, 16), Position = UDim2.new(1, -35, 0.5, -8), BackgroundTransparency = 1, Image = ICON_STAR, ImageColor3 = C_SUB, Parent = card })
+    end
+end
+
+createCard("DeepSeek UI", "带 DeepSeek 皮肤的 WindUI 分支版：方形面板、深蓝色点缀、随机鲸鱼壁纸、边缘宠物、顶栏坐姿角色、角落贴纸和像素跑马灯。", "")
+createCard("发送通知", "在右上角弹出提示", "icon")
+createCard("打开对话框", "带两个操作按钮的模态窗口", "icon")
+createCard("自动运行", "注入后立即执行", "toggle")
+createCard("移动速度", "角色移动速度", "slider")
+
+-- ==========================================
+-- 7. 悬浮球与退出弹窗
+-- ==========================================
+local floatBall = create("ImageButton", { Size = UDim2.new(0, 50, 0, 50), Position = UDim2.new(0, 20, 0.5, -25), BackgroundColor3 = C_WHITE, BackgroundTransparency = 0.2, Image = ICON_WHALE, ImageColor3 = C_BLUE, Visible = false, AutoButtonColor = false, Parent = gui })
+corner(floatBall, 25)
+create("UIStroke", { Color = C_BLUE, Thickness = 2, Transparency = 0.5 }, floatBall)
+
+local bDrag, bStart, bPos
+floatBall.InputBegan:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then bDrag, bStart, bPos = true, i.Position, floatBall.Position end end)
+UIS.InputChanged:Connect(function(i) if bDrag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then local d = i.Position - bStart; floatBall.Position = UDim2.new(bPos.X.Scale, bPos.X.Offset + d.X, bPos.Y.Scale, bPos.Y.Offset + d.Y) end end)
+UIS.InputEnded:Connect(function(i) if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then bDrag = false end end)
+
+local dialogOverlay = create("Frame", { Size = UDim2.new(1, 0, 1, 0), BackgroundColor3 = Color3.new(0,0,0), BackgroundTransparency = 0.5, Visible = false, ZIndex = 50, Parent = gui })
+local dialogBox = create("Frame", { Size = UDim2.new(0, 280, 0, 140), Position = UDim2.new(0.5, -140, 0.5, -70), BackgroundColor3 = C_WHITE, BorderSizePixel = 0, Parent = dialogOverlay })
+corner(dialogBox, 12)
+create("TextLabel", { Size = UDim2.new(1, 0, 0, 40), Position = UDim2.new(0, 0, 0, 25), BackgroundTransparency = 1, Text = "是否退出脚本？", TextColor3 = C_TEXT, TextSize = 16, Font = FONT_BOLD, Parent = dialogBox })
+
+local btnExit = create("TextButton", { Size = UDim2.new(0, 100, 0, 36), Position = UDim2.new(0, 30, 0, 85), BackgroundColor3 = C_BLUE, Text = "退出", TextColor3 = C_WHITE, TextSize = 14, Font = FONT_BOLD, AutoButtonColor = false, Parent = dialogBox })
+corner(btnExit, 6)
+local btnCancel = create("TextButton", { Size = UDim2.new(0, 100, 0, 36), Position = UDim2.new(1, -130, 0, 85), BackgroundColor3 = C_BG, Text = "取消", TextColor3 = C_TEXT, TextSize = 14, Font = FONT_BOLD, AutoButtonColor = false, Parent = dialogBox })
+corner(btnCancel, 6)
+
+btnClose.MouseButton1Click:Connect(function() dialogOverlay.Visible = true end)
+btnCancel.MouseButton1Click:Connect(function() dialogOverlay.Visible = false end)
+btnExit.MouseButton1Click:Connect(function() gui:Destroy() end)
+
+btnMin.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    floatBall.Visible = true
+end)
+
+floatBall.MouseButton1Click:Connect(function()
+    if not bDrag then
+        mainFrame.Visible = true
+        floatBall.Visible = false
+    end
+end)
